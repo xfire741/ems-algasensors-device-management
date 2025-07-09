@@ -31,9 +31,30 @@ public class SensorController {
 
     private final SensorRepository sensorRepository;
 
+    @PutMapping("/{sensorId}/enable")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void enable(@PathVariable("sensorId") TSID sensorId) {
+        SensorId id = new SensorId(sensorId);
+        Sensor sensor = sensorRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sensor not found"));
+
+        sensor.setEnabled(true);
+        sensorRepository.saveAndFlush(sensor);
+        
+    }
+
+    @DeleteMapping("/{sensorId}/enable")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void disable(@PathVariable("sensorId") TSID sensorId) {
+        Sensor sensor = sensorRepository.findById(new SensorId(sensorId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sensor not found"));
+        sensor.setEnabled(false);
+        sensorRepository.saveAndFlush(sensor);
+    }
+
     @PutMapping("/{sensorId}")
     @ResponseStatus(HttpStatus.OK)
-    public SensorOutput update(@PathVariable TSID sensorId, @RequestBody SensorInput input) {
+    public SensorOutput update(@PathVariable("sensorId") TSID sensorId, @RequestBody SensorInput input) {
         SensorId id = new SensorId(sensorId);
         Sensor sensor = sensorRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sensor not found"));
@@ -59,7 +80,7 @@ public class SensorController {
 
     @DeleteMapping("/{sensorId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable TSID sensorId) {
+    public void delete(@PathVariable("sensorId") TSID sensorId) {
         SensorId id = new SensorId(sensorId);
         if (!sensorRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sensor not found");
@@ -74,7 +95,7 @@ public class SensorController {
     }
 
     @GetMapping("/{sensorId}")
-    public SensorOutput getOne(@PathVariable TSID sensorId) {
+    public SensorOutput getOne(@PathVariable("sensorId") TSID sensorId) {
         Sensor sensor = sensorRepository.findById(new SensorId(sensorId))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sensor not found"));
 
