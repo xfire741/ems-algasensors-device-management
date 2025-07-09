@@ -1,8 +1,10 @@
 package com.algaworks.algasensors.device_management.api.controller;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -28,6 +30,42 @@ import lombok.RequiredArgsConstructor;
 public class SensorController {
 
     private final SensorRepository sensorRepository;
+
+    @PutMapping("/{sensorId}")
+    @ResponseStatus(HttpStatus.OK)
+    public SensorOutput update(@PathVariable TSID sensorId, @RequestBody SensorInput input) {
+        SensorId id = new SensorId(sensorId);
+        Sensor sensor = sensorRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sensor not found"));
+
+        if (input.getName() != null) {
+            sensor.setName(input.getName());
+        }
+        if (input.getIp() != null) {
+            sensor.setIp(input.getIp());
+        }
+        if (input.getLocation() != null) {
+            sensor.setLocation(input.getLocation());
+        }
+        if (input.getProtocol() != null) {
+            sensor.setProtocol(input.getProtocol());
+        }
+        if (input.getModel() != null) {
+            sensor.setModel(input.getModel());
+        }
+
+        return toOutput(sensorRepository.saveAndFlush(sensor));
+    }
+
+    @DeleteMapping("/{sensorId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable TSID sensorId) {
+        SensorId id = new SensorId(sensorId);
+        if (!sensorRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sensor not found");
+        }
+        sensorRepository.deleteById(id);
+    }
 
     @GetMapping
     public Page<SensorOutput> search(Pageable pageable) {
